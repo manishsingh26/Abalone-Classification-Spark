@@ -1,0 +1,56 @@
+package com.innovaccer.analytics.sparklistenertest
+
+import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.scheduler._
+import org.apache.spark.sql.SQLContext
+
+object SparkListenerTest extends SparkListener {
+
+  def main(args: Array[String]): Unit = {
+    val conf = new SparkConf().setMaster("local[*]").setAppName("SparkListener")
+    val sc = new SparkContext(conf)
+    val sqlContext = new SQLContext(sc)
+
+    sc.addSparkListener(new SparkListener() {
+      override def onApplicationStart(applicationStart: SparkListenerApplicationStart) {
+        println("Spark ApplicationStart: " + applicationStart.time)
+      }
+      override def onApplicationEnd(applicationEnd: SparkListenerApplicationEnd) {
+        println("Spark ApplicationEnd: " + applicationEnd.time)
+      }
+
+      override def onJobStart(jobStart: SparkListenerJobStart) {
+        println(s"Job started with ${jobStart.jobId} stages: $jobStart")
+      }
+
+      override def onStageCompleted(stageCompleted: SparkListenerStageCompleted): Unit = {
+        println(s"Stage ${stageCompleted.stageInfo.stageId} completed with ${stageCompleted.stageInfo.numTasks} tasks.")
+      }
+    } )
+
+//    case class FileClass(	Loan_ID:String,Gender:String,Married:String,Dependents:Integer,Education:String,
+//      Self_Employed:String,Applicant_Income:Int,Coapplicant_Income:Int,
+//      Loan_Amount:Int,Loan_Amount_Term:Int,Credit_History:Int,Property_Area:String)
+//
+    val filePath = "/com/innovaccer/analytics/sparklistenertest/abalone.csv"
+    val fileResource = getClass.getResource(filePath).getFile()
+    println(fileResource)
+//    val textFile = sc.textFile(fileResource)
+//
+//    val myFile = textFile.map(x => x.split(',')).map(x => new FileClass(x(0),x(1),x(2),x(3).toInt,x(4),x(5)
+//                                                                        ,x(6).toInt,x(7).toInt,x(8).toInt,x(9).toInt,
+//                                                                        x(10).toInt,x(11)))
+//    val df = sqlContext.read.format("com.databricks.spark.csv")
+//                            .option("header", "true")
+//                            .option("inferSchema", "true")
+//                            .load(fileResource)
+//    df.show()
+    val r = sc.textFile(fileResource)
+    println(r.count())
+
+  }
+}
+
+
+
+sbt.version = 0.13.11
